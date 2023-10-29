@@ -1,0 +1,38 @@
+version: '1'
+
+volumes:
+  pg_data:
+  static:
+  media:
+  redis_data:
+
+services:
+  db:
+    container_name: wego_db
+    image: postgres:13.10
+    env_file: .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+  backend:
+    container_name: wego_backend
+    build: ./backend/
+    env_file: .env
+    volumes:
+      - static:/static_backend
+      - media:/media
+  redis:
+    container_name: wego_redis
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+  gateway:
+    container_name: wego_gateway
+    build: ./gateway/
+    env_file: .env
+    ports:
+      - 80:80
+    volumes:
+      - static:/static
+      - media:/media
