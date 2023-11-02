@@ -1,6 +1,15 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import functools
+from threading import RLock
+import kombu.utils
+
+if not getattr(kombu.utils.cached_property, 'lock', None):
+    setattr(kombu.utils.cached_property, 'lock',
+            functools.cached_property(lambda _: RLock()))
+    kombu.utils.cached_property.lock.__set_name__(
+        kombu.utils.cached_property, 'lock')
 
 load_dotenv()
 
@@ -89,7 +98,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://wego_redis/',  
+        'LOCATION': 'redis://wego_redis/1',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
@@ -114,8 +123,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-
 
 
 # Internationalization
@@ -147,3 +154,7 @@ MEDIA_ROOT = '/media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 API_URL = os.environ.get('API_URL')
+
+
+CELERY_BROKER_URL = 'redis://wego_redis/0'
+BROKER_CONNECTION_RETRY_ON_STARTUP = True

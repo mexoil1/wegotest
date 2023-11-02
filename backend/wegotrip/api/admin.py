@@ -1,16 +1,10 @@
-import requests
-import json
 from django.contrib import admin
-from django.http import HttpResponse
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.utils.html import format_html
-from rest_framework import status
-from rest_framework.response import Response
-from datetime import datetime
-from time import sleep
 
 from .models import Order, Payment, Product
+from .tasks import confirm_order
 from .consts import Constants
 
 
@@ -27,22 +21,7 @@ class OrderAdmin(admin.ModelAdmin):
     payment_link.short_description = "Действия"
 
     def confirm_order(self, request, object_id):
-        order = Order.objects.get(pk=object_id)
-        order.status = Constants.ORDER_CONFIRMED
-        order.date_of_confirm = datetime.now()
-        order.save()
-        sleep(5)
-        date_of_confirm_str = order.date_of_confirm.strftime(
-            "%Y-%m-%d %H:%M:%S")
-
-        data = {
-            "id": order.id,
-            "amount": order.sum_price,
-            "date": date_of_confirm_str,
-        }
-        url = "https://webhook.site/34d5323b-89f4-4fde-97e4-187db1af4e4f"
-        response = requests.post(url, data=json.dumps(data))
-
+        confirm_order.delay(object_id)
         return redirect('http://127.0.0.1/admin/api/order/')
 
     def get_urls(self):

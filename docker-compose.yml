@@ -36,3 +36,11 @@ services:
     volumes:
       - static:/static
       - media:/media
+  celery:
+    container_name: wego_celery
+    build: ./backend/
+    environment:
+      - IS_CELERY=true
+    depends_on:
+      - backend
+      - redis
