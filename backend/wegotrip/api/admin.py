@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.contrib import admin
 from django.urls import reverse
 from django.shortcuts import redirect
@@ -21,6 +22,10 @@ class OrderAdmin(admin.ModelAdmin):
     payment_link.short_description = "Действия"
 
     def confirm_order(self, request, object_id):
+        order = Order.objects.get(pk=object_id)
+        order.status = Constants.ORDER_CONFIRMED
+        order.date_of_confirm = datetime.now()
+        order.save()
         confirm_order.delay(object_id)
         return redirect('http://127.0.0.1/admin/api/order/')
 

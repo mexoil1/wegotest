@@ -16,9 +16,6 @@ logger = logging.getLogger(__name__)
 def confirm_order(object_id):
     try:
         order = Order.objects.get(pk=object_id)
-        order.status = Constants.ORDER_CONFIRMED
-        order.date_of_confirm = datetime.now()
-        order.save()
         sleep(5)
         date_of_confirm_str = order.date_of_confirm.strftime(
             "%Y-%m-%d %H:%M:%S")
